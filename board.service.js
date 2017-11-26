@@ -10,18 +10,18 @@ let BoardService;
   createArticle('dummy 002', 'dummy content 002');
 
   function createArticle(subject, content) {
-    return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
       dataStore.query('INSERT INTO Board (subject, content) VALUES ?', [
-            [
-                [subject, content]
-            ]
-          ], (err, data) => {
+        [
+          [subject, content]
+        ]
+      ], (err, data) => {
         if (err) {
           reject(err);
         } else {
           resolve(findById(data.insertId));
         }
-      })
+      });
     });
   }
 
@@ -32,33 +32,46 @@ let BoardService;
             return Promise.reject(new Error('Try to update null Article'));
           }
 
-          article.subject = subject;
-          article.content = content;
-
-          return Promise.resolve();
+          return new Promise((resolve, reject) => {
+            dataStore.query('UPDATE Board SET ? WHERE ?', [
+              {
+                subject: subject,
+                content: content
+              },
+              {
+                id: id
+              }
+            ], (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          });
         });
   }
 
   function findAll() {
     return new Promise((resolve, reject) => {
-      dataStore.query('select * from Board', (err, data)=> {
+      dataStore.query('select * from Board', (err, data) => {
         if (err) {
           reject(err);
         } else {
           resolve(data.map(x => new Article(x.id, x.subject, x.content)));
         }
-      })
+      });
     });
   }
 
   function findById(id) {
-    return new Promise((resolve, reject)=>{
+    return new Promise((resolve, reject) => {
       dataStore.query('SELECT * FROM Board WHERE id=? LIMIT 1', id, (err, data) => {
         if (err) {
           reject(err);
-        } else if (data.length===0) {
+        } else if (data.length === 0) {
           resolve(null);
-        }else {
+        } else {
           const a = data[0];
           resolve(new Article(a.id, a.subject, a.content));
         }
@@ -84,13 +97,13 @@ let BoardService;
 
   function truncate() {
     return new Promise((resolve, reject) => {
-      dataStore.query('truncate Board', (err, data)=> {
+      dataStore.query('truncate Board', (err, data) => {
         if (err) {
           reject(err);
         } else {
           resolve(data);
         }
-      })
+      });
     });
   }
 
