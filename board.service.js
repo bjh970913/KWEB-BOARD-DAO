@@ -5,17 +5,24 @@ let BoardService;
 // noinspection JSUnusedAssignment
 (function (BoardService) {
   let dataStore = [];
-  let dataCounter = 0;
 
   createArticle('dummy 001', 'dummy content 001');
   createArticle('dummy 002', 'dummy content 002');
 
   function createArticle(subject, content) {
-    const newArticle = new Article(subject, content);
-    dataCounter++;
-    newArticle.id = dataCounter;
-    dataStore.push(newArticle);
-    return Promise.resolve(Object.assign({}, newArticle));
+    return new Promise((resolve, reject)=>{
+      dataStore.query('INSERT INTO Board (subject, content) VALUES ?', [
+            [
+                [subject, content]
+            ]
+          ], (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(findById(data.insertId));
+        }
+      })
+    });
   }
 
   function updateArticle(id, subject, content) {
@@ -44,13 +51,19 @@ let BoardService;
     });
   }
 
-  function findById(id, _writeAble) {
-    const findResult = dataStore.filter((x) => x.id === id);
-    if (findResult.length === 1) {
-      return Promise.resolve(_writeAble ? findResult[0] : Object.assign({}, findResult[0]));
-    } else {
-      return Promise.resolve(null);
-    }
+  function findById(id) {
+    return new Promise((resolve, reject)=>{
+      dataStore.query('SELECT * FROM Board WHERE id=? LIMIT 1', id, (err, data) => {
+        if (err) {
+          reject(err);
+        } else if (data.length===0) {
+          resolve(null);
+        }else {
+          const a = data[0];
+          resolve(new Article(a.id, a.subject, a.content));
+        }
+      });
+    });
   }
 
   function deleteById(id) {
