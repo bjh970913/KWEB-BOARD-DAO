@@ -3,7 +3,7 @@ const Article = require('./article.model');
 let BoardService;
 // noinspection JSUnusedAssignment
 (function (BoardService) {
-  const dataStore = [];
+  let dataStore = [];
   let dataCounter = 0;
 
   createArticle('dummy 001', 'dummy content 001');
@@ -14,47 +14,56 @@ let BoardService;
     dataCounter++;
     newArticle.id = dataCounter;
     dataStore.push(newArticle);
-    return Object.assign({}, newArticle);
+    return Promise.resolve(Object.assign({}, newArticle));
   }
 
   function updateArticle(id, subject, content) {
-    const article = findById(id, true);
-    if (article === null) {
-      throw new Error('Try to update null Article');
-    }
+    return findById(id, true)
+        .then(article => {
+          if (article === null) {
+            return Promise.reject(new Error('Try to update null Article'));
+          }
 
-    article.subject = subject;
-    article.content = content;
+          article.subject = subject;
+          article.content = content;
+
+          return Promise.resolve();
+        });
   }
 
   function findAll() {
-    return dataStore.map(x => Object.assign({}, x));
+    return Promise.resolve(dataStore.map(x => Object.assign({}, x)));
   }
 
   function findById(id, _writeAble) {
     const findResult = dataStore.filter((x) => x.id === id);
     if (findResult.length === 1) {
-      return _writeAble ? findResult[0] : Object.assign({}, findResult[0]);
+      return Promise.resolve(_writeAble ? findResult[0] : Object.assign({}, findResult[0]));
     } else {
-      return null;
+      return Promise.resolve(null);
     }
   }
 
   function deleteById(id) {
-    const article = findById(id, true);
-    if (article === null) {
-      throw new Error('Try to delete null Article');
-    }
-    dataStore.splice(dataStore.indexOf(article), 1);
+    return findById(id, true)
+        .then(article => {
+          if (article === null) {
+            return Promise.reject(new Error('Try to delete null Article'));
+          }
+          dataStore.splice(dataStore.indexOf(article), 1);
+          return Promise.resolve();
+        });
   }
 
   function deleteAll() {
     dataStore.splice(0, dataStore.length);
+    return Promise.resolve();
   }
 
   function truncate() {
     dataCounter = 0;
     dataStore.splice(0, dataStore.length);
+    return Promise.resolve();
   }
 
   BoardService.createArticle = createArticle;
@@ -65,6 +74,12 @@ let BoardService;
   BoardService.deleteAll = deleteAll;
   BoardService.truncate = truncate;
 
-  console.log('BoardService init OK');
+
+  BoardService.init = function () {
+    dataStore = [];
+    dataCounter = 0;
+    console.log('BoardService init OK');
+    return Promise.resolve(true);
+  };
 })(BoardService = BoardService || (BoardService = {}));
 module.exports = BoardService;
