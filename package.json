@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "assert": "^1.4.1",
+    "mysql": "^2.15.0"
+  },
+  "devDependencies": {
+    "@types/assert": "^0.0.31",
+    "@types/mysql": "^2.15.2"
+  }
+}
