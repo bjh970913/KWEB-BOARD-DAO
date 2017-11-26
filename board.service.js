@@ -90,7 +90,20 @@ let BoardService;
           reject(err);
         } else {
           console.log('BoardService init OK');
-          resolve();
+
+          dataStore.query(`
+            CREATE TABLE IF NOT EXISTS Board (
+              id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+              subject VARCHAR(255),
+              content TEXT
+            );
+          `, (err, result) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          });
         }
       });
     });
