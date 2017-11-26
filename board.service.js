@@ -33,7 +33,15 @@ let BoardService;
   }
 
   function findAll() {
-    return Promise.resolve(dataStore.map(x => Object.assign({}, x)));
+    return new Promise((resolve, reject) => {
+      dataStore.query('select * from Board', (err, data)=> {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data.map(x => new Article(x.id, x.subject, x.content)));
+        }
+      })
+    });
   }
 
   function findById(id, _writeAble) {
