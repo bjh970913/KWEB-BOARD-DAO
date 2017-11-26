@@ -1,4 +1,5 @@
 const Article = require('./article.model');
+const Mysql = require('mysql');
 
 let BoardService;
 // noinspection JSUnusedAssignment
@@ -76,10 +77,23 @@ let BoardService;
 
 
   BoardService.init = function () {
-    dataStore = [];
-    dataCounter = 0;
-    console.log('BoardService init OK');
-    return Promise.resolve(true);
+    dataStore = Mysql.createConnection({
+      host: '127.0.0.1',
+      user: 'kweb',
+      password: 'kweb',
+      database: 'kweb_board'
+    });
+
+    return new Promise((resolve, reject) => {
+      dataStore.connect((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          console.log('BoardService init OK');
+          resolve();
+        }
+      });
+    });
   };
 })(BoardService = BoardService || (BoardService = {}));
 module.exports = BoardService;
