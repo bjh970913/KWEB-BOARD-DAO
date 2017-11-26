@@ -62,9 +62,15 @@ let BoardService;
   }
 
   function truncate() {
-    dataCounter = 0;
-    dataStore.splice(0, dataStore.length);
-    return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      dataStore.query('truncate Board', (err, data)=> {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      })
+    });
   }
 
   BoardService.createArticle = createArticle;
